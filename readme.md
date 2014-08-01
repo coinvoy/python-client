@@ -26,11 +26,12 @@ coinvoy = Coinvoy(options)
 
 //Create invoice
 payment = {
-	"orderID" : "receiving_address",
-	"amount   : "http://yourwebsite/ipn.php",
-	"currency": "company name",
-	"payWith"   : "email@email.com",
-	"escrow"  : False,
+	"orderID" 	 : "your_item_id",
+	"description": "Item/service description",
+	"amount   	 : 0.65,
+	"currency"	 : "BTC",
+	"payWith" 	 : "LTC",
+	"escrow"  	 : False,
 }
 
 invoice = coinvoy.invoice($payment);
