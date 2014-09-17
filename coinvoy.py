@@ -1,5 +1,6 @@
 import json
 import sys
+import hashlib, hmac
 
 try:
     import urllib2
@@ -8,22 +9,21 @@ except ImportError:
     import urllib.request
     import urllib.parse
 
-__author__ = 'ps'
 
 class Coinvoy:
 
+    def invoice(self, amount, address, currency, options = None):
+        params = {
+            'amount'   : amount,
+            'address'  : address,
+            'currency' : currency
+        }
 
-    def __init__(self, options):
-        self.options = options
-
-    def invoice(self, payment):
-
-        base = self.options.copy()
-        base.update(payment)
-        payment = base
+        if not options is None:
+            params.update(options)
 
         try:
-            response = self._apiRequest('http://cryptopay/api/newInvoice', payment)
+            response = self._apiRequest('/api/newInvoice', params)
         except:
             return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
 
@@ -32,78 +32,110 @@ class Coinvoy:
 
         return response
 
-    def button(self, button):
-        base = self.options.copy()
-        base.update(button)
-        button = base
+    def button(self, amount, address, currency, options = None):
 
-        try:
-            response = self._apiRequest('http://cryptopay/api/getButton', button)
-        except:
-            return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
-
-        if not response['success']:
-            return {'success' : False, 'error' : 'An error occured while getting button info: ' + response['message']}
-        return response
-
-    def donation(self, donation):
-        base = self.options.copy()
-        base.update(donation)
-        donation = base
-
-        try:
-            response = self._apiRequest('http://cryptopay/api/getDonation', donation)
-        except:
-            return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
-
-        if not response['success']:
-            return {'success' : False, 'error' : 'An error occured while getting button info: ' + response['message']}
-        return response
-
-    def invoiceFromHash(self, hash=False, payWith=False, amount=False):
-
-        data = {
-            'hash'    :hash,
-            'payWith' :payWith,
-            'amount'  :amount,
+        params = {
+            'amount'   : amount,
+            'address'  : address,
+            'currency' : currency
         }
+
+        if not options is None:
+            params.update(options)
+
         try:
-            response = self._apiRequest('http://cryptopay/api/getDonation', data)
+            response = self._apiRequest('/api/getButton', params)
         except:
             return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
 
         if not response['success']:
             return {'success' : False, 'error' : 'An error occured while getting button info: ' + response['message']}
+
         return response
 
-    def completeEscrow(self, key):
-        if key.strip() == '': return {'success' : False, 'error' : 'Please supply a key'}
+    def donation(self, address, options = None):
+        params = {
+            'address' : address
+        }
+        
+        if not options is None:
+            params.update(options)
 
         try:
-            response = self._apiRequest('http://cryptopay/api/freeEscrow', { 'key' : key })
+            response = self._apiRequest('/api/getDonation', params)
         except:
             return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
+
+        if not response['success']:
+            return {'success' : False, 'error' : 'An error occured while getting button info: ' + response['message']}
+
+        return response
+
+    def invoiceFromHash(self, hash, payWith):
+
+        params = {
+            'hash'    : hash,
+            'payWith' : payWith
+        }
+
+        try:
+            response = self._apiRequest('/api/invoiceHash', params)
+        except:
+            return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
+
+        if not response['success']:
+            return {'success' : False, 'error' : 'An error occured while getting button info: ' + response['message']}
+
+        return response
+
+    def freeEscrow(self, key):
+        params = {
+            'key' : key
+        }
+
+        try:
+            response = self._apiRequest('/api/freeEscrow', params)
+        except:
+            return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
+
         return response
 
 
     def getStatus(self, invoiceId):
-        if invoiceId.strip() == '': return {'success' : False, 'error' : 'Please supply an invoice id'}
+        if invoiceId.strip() == '':
+            return {'success' : False, 'error' : 'Please supply an invoice id'}
+
+        params = {
+            'invoiceId' : invoiceId
+        }
 
         try:
-            response = self._apiRequest('http://cryptopay/api/status', { 'invoiceId' : invoiceId })
+            response = self._apiRequest('/api/status', { 'invoiceId' : invoiceId })
         except:
             return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
         return response
 
 
     def getInvoice(self, invoiceId):
-        if invoiceId.strip() == '': return {'success' : False, 'error' : 'Please supply an invoice id'}
+        if invoiceId.strip() == '':
+            return {'success' : False, 'error' : 'Please supply an invoice id'}
+
+        params = {
+            'invoiceId' : invoiceId
+        }
 
         try:
-            response = self._apiRequest('http://cryptopay/api/invoice', { 'invoiceId' : invoiceId })
+            response = self._apiRequest('/api/invoice', { 'invoiceId' : invoiceId })
         except:
             return {'success' : False, 'error' : 'An error occured: ' + sys.exc_info()[0] }
+
         return response
+
+    def validateNotification(self, invoiceId, hash, orderID, address):
+        hexString = hmac.new(address, ":".join([orderID, invoiceId]), hashlib.sha256).hexdigest()
+
+        return hexString == hash
+            
 
     def _apiRequest(self, url, postParams = False):
 
@@ -113,6 +145,8 @@ class Coinvoy:
         else:
             data = None
 
+        url = "https://coinvoy.net" + url;
+
         if sys.version_info.major == 2:
             req = urllib2.Request(url, data)
             response = urllib2.urlopen(req)
@@ -121,6 +155,8 @@ class Coinvoy:
             response = urllib.request.urlopen(req)
 
         return json.loads(response.read().decode())
+
+    
 
 
 
