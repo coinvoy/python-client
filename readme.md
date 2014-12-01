@@ -1,12 +1,12 @@
 Coinvoy API - Python Client Library
-================================
+===================================
 
 Python client library for Coinvoy API
 
 
 ##About Coinvoy
 
-Coinvoy is an online payment processor with an integrated exchange feature for established cryptocurrencies, namely Bitcoin, Litecoin and Dogecoin. It's objective is to provide an easiest yet the most secure way to accept cryptocurrencies.
+Coinvoy is an online payment processor. It's objective is to provide an easiest yet the most secure way to accept cryptocurrencies.
 
 ##Get started
 
@@ -16,34 +16,34 @@ Place coinvoy.py in your directory and import it.
 ```
 from coinvoy import Coinvoy
 
-coinvoy = Coinvoy(options)
+coinvoy = Coinvoy()
 
 # Create invoice
-amount   = 1.42;                           # Amount of invoice value
-address  = "your cryptocurrency address"   # Your receiving address for Bitcoin, Litecoin or Dogecoin
-currency = "BTC";                          # Currency of invoice value
+amount   = 0.012
+address  = "receiving address"
+currency = "BTC"
 
-invoice = coinvoy.invoice(amount, address, currency)
+payment = coinvoy.payment(amount, currency, address)
 
-print(invoice)
+print(payment)
 
-# invoice.id      - always find your invoice at https://coinvoy.net/invoice/{id}
-# invoice.key     - you need this key if this is an escrow
-# invoice.url     - shortcut for the payment box https://coinvoy.net/payment/{id}
-# invoice.address - show it to user, it is the payment address
-# invoice.html    - easiest way to display a payment box, just echo it
+# payment.id      - always find your invoice at https://coinvoy.net/invoice/{id}
+# payment.key     - you need this key if this is an escrow
+# payment.url     - shortcut for the payment box https://coinvoy.net/payment/{id}
+# payment.address - show it to user, it is the payment address
+# payment.html    - easiest way to display a payment box, just echo it
 
 ```
 
 ###List of all commands:
-- invoice(payment)			                        - creates live invoice
-- button(button)			                        - prepares a button template
-- donation(donation)		                        - prepares a donation template
-- invoiceFromHash(hash, payWith[,amount]) 			- creates live invoice from template hash
-- validateNotification(invoiceId, orderID, hash)	- checks if incoming payment notification is valid.
-- completeEscrow(key)		                        - finalize an escrow with its unique key. This action sends funds to receiver
-- getStatus(invoiceId)		                        - current status of invoice [new,approved,confirmed,completed,cancelled]
-- getInvoice(invoiceId)		                        - get latest invoice object
+- payment(amount, currency, address)			          - creates payment
+- button(amount, currency, address)			              - prepares a button template
+- donation(address)		                                  - prepares a donation template
+- validateNotification(hash, orderID, invoiceID, secret)  - checks if incoming payment notification is valid.
+- freeEscrow(key)		                                  - finalize an escrow with its unique key. This action sends funds to receiver
+- cancelEscrow(key)                                       - cancel an escrow with its unique key. This action sends funds to owner
+- status(invoiceID)		                                  - current status of payment [new,approved,confirmed,completed,cancelled]
+- invoice(invoiceID)		                              - get latest invoice object
 
 Your feedback and suggestions are very much welcome. Please write to support@coinvoy.net for any contact. 
 

@@ -1,48 +1,71 @@
 from coinvoy import Coinvoy
 
 
-def createInvoice():
-	coinvoy = Coinvoy()
+def createPayment(amount, currency, address):
+    coinvoy = Coinvoy()
 
-	amount   = 0.42
-	address  = "your cryptocurrency address"
-	currency = "BTC"
+    payment = coinvoy.payment(amount, currency, address)
 
-	invoice = coinvoy.invoice(amount, address, currency)
+    print(payment)
 
-	print(invoice)
+    if payment['success']:
+        status = coinvoy.status(payment['id'])
 
-	status = coinvoy.getStatus(invoice['id'])
+        print(status)
 
-	print(status)
+def createEscrow(amount, currency, address, returnAddress):
+    coinvoy = Coinvoy()
 
+    payment = coinvoy.payment(amount, currency, address, { 'escrow'        : True,
+                                                           'returnAddress' : returnAddress })
 
-def getDonation():
-	coinvoy = Coinvoy()
+    print(payment)
 
-	address  = "your cryptocurrency address"
+    if payment['success']:
+        invoice = coinvoy.invoice(payment['id'])
 
-	donation = coinvoy.donation(address)
-
-	print(donation)
-
-
-def getButton():
-	coinvoy = Coinvoy()
-
-	amount   = 0.42
-	address  = "your cryptocurrency address"
-	currency = "BTC"
-
-	button = coinvoy.button(amount, address, currency)
-
-	print(button)
-
-	invoice = coinvoy.invoiceFromHash(button['hash'], 'BTC')
-
-	print(invoice)
+        print(invoice)
 
 
-createInvoice()
-#getDonation()
-#getButton()
+def getDonation(address):
+    coinvoy = Coinvoy()
+
+    donation = coinvoy.donation(address)
+
+    print(donation)
+
+
+def getButton(amount, currency, address):
+    coinvoy = Coinvoy()
+
+    button = coinvoy.button(amount, currency, address)
+
+    print(button)
+    
+def freeEscrow(key):
+    coinvoy = Coinvoy()
+    
+    result = coinvoy.freeEscrow(key)
+    
+    print(result)
+    
+def cancelEscrow(key):
+    coinvoy = Coinvoy()
+    
+    result = coinvoy.freeEscrow(key)
+    
+    print(result)
+
+
+amount        = 0.012
+address       = "receiving address" 
+returnAddress = "return address"
+currency      = "BTC"
+key           = "key returned from escrow payment"
+
+createPayment(amount, currency, address)
+# createEscrow(amount, currency, address, returnAddress)
+# getDonation(address)
+# getButton(amount, currency, address)
+# freeEscrow(key)
+# cancelEscrow(key)
